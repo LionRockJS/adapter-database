@@ -1,4 +1,4 @@
-import { ORMAdapter } from '@lionrockjs/central';
+import { ORMAdapter, Central } from '@lionrockjs/central';
 
 export default class ORMAdapterSQLite extends ORMAdapter {
   static OP = Object.assign(
@@ -91,31 +91,59 @@ export default class ORMAdapterSQLite extends ORMAdapter {
   }
 
   static async getRow(database, sql, values) {
-    return database.prepare(sql).get(...this.translateValues(values));
+    try{
+      return database.prepare(sql).get(...this.translateValues(values));
+    }catch(e){
+      Central.log(e);
+      Central.log(sql);
+      return null;
+    }
   }
 
   static async getRows(database, sql, values){
-    return database.prepare(sql).all(...this.translateValues(values));
+    try{
+      return database.prepare(sql).all(...this.translateValues(values));
+    }catch(e){
+      Central.log(e);
+      Central.log(sql);
+      return [];
+    }
   }
 
   static async run(database, sql, values){
-    return database.prepare(sql).run(...this.translateValues(values));
+    try {
+      return database.prepare(sql).run(...this.translateValues(values));
+    }catch(e){
+      Central.log(e);
+      Central.log(sql);
+    }
   }
 
   async read(columns = ['id','name']) {
     const sql = `SELECT ${columns.join(', ')} FROM ${this.tableName} WHERE id = ?`;
-
     return this.constructor.getRow(this.database, sql, [this.client.id]);
   }
 
   async update(values) {
     const columns = this.client.getColumns();
-    return this.constructor.run(this.database, `UPDATE ${this.tableName} SET ${columns.map(x => x + ' = ?').join(', ')} WHERE id = ?`, [...values, this.client.id]);
+    const sql = `UPDATE ${this.tableName} SET ${columns.map(x => x + ' = ?').join(', ')} WHERE id = ?`;
+    try{
+      return this.constructor.run(this.database, sql, [...values, this.client.id]);
+    }catch(e){
+      Central.log(e);
+      Central.log(sql);
+    }
   }
 
   async insert(values) {
     const columns = this.client.getColumns();
-    return this.constructor.run(this.database, `INSERT OR FAIL INTO ${this.tableName} (${columns.join(', ')}, id) VALUES (?, ${columns.map(() => '?').join(', ')})`, [...values, this.client.id]);
+    const sql = `INSERT OR FAIL INTO ${this.tableName} (${columns.join(', ')}, id) VALUES (?, ${columns.map(() => '?').join(', ')})`;
+    try{
+      return this.constructor.run(this.database, sql, [...values, this.client.id]);
+    }catch(e){
+      Central.log(e);
+      Central.log(sql);
+    }
   }
 
   async delete() {
