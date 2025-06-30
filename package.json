@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@lionrockjs/adapter-database-better-sqlite3",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "LionRockJS database adapter",
   "main": "index.js",
   "scripts": {
@@ -38,6 +38,6 @@
   },
   "homepage": "https://github.com/LionRockJS/adapter-database#readme",
   "dependencies": {
-    "better-sqlite3": "^11.8.1"
+    "better-sqlite3": "^12.2.0"
   }
 }

@@ -87,7 +87,30 @@ export default class ORMAdapterSQLite extends ORMAdapter {
   }
 
   static getOrderByStatement(orderBy) {
-    return ` ORDER BY ${Array.from(orderBy).map(kv => kv[0] + ' ' + kv[1]).join(',')}`;
+    Array.from(orderBy).forEach(kv =>{
+      if(!/[a-z0-9_:$.]+/.test(kv[0].toLowerCase())){
+        throw new Error(`Invalid order by key: ${kv[0]}. Use alphanumeric characters and underscores only.`);
+      }
+
+      if(!/asc|desc/.test(kv[1].toLowerCase())) {
+        throw new Error(`Invalid order by value: ${kv[1]}. Use 'ASC' or 'DESC' instead.`);
+      }
+    })
+
+    const values = [];
+    const statements = Array.from(orderBy).map(kv => {
+      if(/:\$\./.test(kv[0])){
+        const parts = kv[0].split(':');
+        values.push(parts[1]);
+        return `json_extract(${parts[0]}, ?) ${kv[1] || 'ASC'}`;
+      }
+      return `${kv[0]} ${kv[1] || 'ASC'}`;
+    });
+
+    return {
+      statement:` ORDER BY ${statements.join(',')}`,
+      values: values,
+    };
   }
 
   static async getRow(database, sql, values) {
@@ -96,6 +119,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     }catch(e){
       Central.log(e);
       Central.log(sql);
+      Central.log(values);
       return null;
     }
   }
@@ -106,6 +130,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     }catch(e){
       Central.log(e);
       Central.log(sql);
+      Central.log(values);
       return [];
     }
   }
@@ -116,6 +141,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     }catch(e){
       Central.log(e);
       Central.log(sql);
+      Central.log(values);
     }
   }
 
@@ -132,6 +158,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     }catch(e){
       Central.log(e);
       Central.log(sql);
+      Central.log(values);
     }
   }
 
@@ -143,6 +170,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     }catch(e){
       Central.log(e);
       Central.log(sql);
+      Central.log(values);
     }
   }
 
@@ -184,7 +212,8 @@ export default class ORMAdapterSQLite extends ORMAdapter {
       const result = await this.constructor.getRow(this.database, sql, [...values]);
       return result ? [result] : [];
     }
-    return this.constructor.getRows(this.database, sql,[...values]);
+
+    return this.constructor.getRows(this.database, sql, [...values]);
   }
 
   async readAll(kv, columns=['id', 'name'], limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
@@ -194,14 +223,14 @@ export default class ORMAdapterSQLite extends ORMAdapter {
       this.readResult(
         limit,
         columns,
-        `WHERE ${Array.from(kv.keys()).map(k => k + ' = ?').join(' AND ')}${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-        Array.from(kv.values())
+        `WHERE ${Array.from(kv.keys()).map(k => k + ' = ?').join(' AND ')}${statementOrderBy.statement} LIMIT ? OFFSET ?`,
+        [...Array.from(kv.values()), ...statementOrderBy.values, limit, offset]
       ) :
       this.readResult(
         limit,
         columns,
-        `${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-        []
+        `${statementOrderBy.statement} LIMIT ? OFFSET ?`,
+        [...statementOrderBy.values ,limit, offset]
       );
   }
 
@@ -209,8 +238,8 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     const statementOrderBy = this.constructor.getOrderByStatement(orderBy);
     return this.readResult(limit,
       columns,
-      `WHERE ${key} IN (${values.map(() => '?').join(', ')})${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-      values
+      `WHERE ${key} IN (${values.map(() => '?').join(', ')})${statementOrderBy.statement} LIMIT ? OFFSET ?`,
+      [...values, ...statementOrderBy.values, limit, offset]
     );
   }
 
@@ -220,8 +249,8 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     return this.readResult(
       limit,
       columns,
-      `WHERE ${wheres} ${statementOrderBy} LIMIT ${limit} OFFSET ${offset}`,
-      whereValues
+      `WHERE ${wheres} ${statementOrderBy.statement} LIMIT ? OFFSET ?`,
+      [...whereValues, ...statementOrderBy.values, limit, offset]
     );
   }
 
