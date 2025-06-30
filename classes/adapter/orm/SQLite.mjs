@@ -102,9 +102,9 @@ export default class ORMAdapterSQLite extends ORMAdapter {
       if(/:\$\./.test(kv[0])){
         const parts = kv[0].split(':');
         values.push(parts[1]);
-        return `json_extract(${parts[0]}, ?) ${kv[1] || 'ASC'}`;
+        return `json_extract(${parts[0]}, ?) COLLATE NOCASE ${kv[1] || 'ASC'}`;
       }
-      return `${kv[0]} ${kv[1] || 'ASC'}`;
+      return `${kv[0]} COLLATE NOCASE ${kv[1] || 'ASC'}`;
     });
 
     return {
