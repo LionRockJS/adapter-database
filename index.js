@@ -27,10 +27,10 @@ export default {
 }
 
 
-import DatabaseAdapterBetterSQLite3 from './classes/adapter/database/BetterSQLite3.mjs';
+import DatabaseAdapterBunSqlite from './classes/adapter/database/BunSqlite.mjs';
 import ORMAdapterSQLite from './classes/adapter/orm/SQLite.mjs';
 
 export {
-  DatabaseAdapterBetterSQLite3,
+  DatabaseAdapterBunSqlite,
   ORMAdapterSQLite
 }
