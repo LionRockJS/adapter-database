@@ -1,6 +1,8 @@
+import { beforeEach, afterEach, describe, it, expect } from 'bun:test';
+
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
-import Database from 'better-sqlite3';
+import {Database} from 'bun:sqlite';
 import { Central, ORM, Model } from '@lionrockjs/central';
 import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
 Model.defaultAdapter = ORMAdapterSQLite;
@@ -200,12 +202,12 @@ CREATE TABLE collection_products(
     db.exec('DELETE FROM collection_products;');
   });
 
-  test('orm setup', async () => {
+  it('orm setup', async () => {
     const p = await ORM.factory(Product, 1, { database: db});
     expect(p.name).toBe('Foo');
   });
 
-  test('eager load one level', async () => {
+  it('eager load one level', async () => {
     const collection = await ORM.factory(Collection, 1, { database: db });
     expect(collection.products).toBe(undefined);
 
@@ -234,13 +236,13 @@ CREATE TABLE collection_products(
     expect(c2.products).toBe(undefined);
   });
 
-  test('empty options', async () => {
+  it('empty options', async () => {
     const collection = await ORM.factory(Collection, 1, { database: db });
     await collection.eagerLoad();
     expect(collection.products).toBe(undefined);
   });
 
-  test('parent', async () => {
+  it('parent', async () => {
     const variant = await ORM.factory(Variant, 1, { database: db, columns:['id', 'product_id','price'] });
     expect(variant.price).toBe(100);
     await variant.eagerLoad({
@@ -251,7 +253,7 @@ CREATE TABLE collection_products(
     expect(variant.product.name).toBe('Foo');
   });
 
-  test('count', async () => {
+  it('count', async () => {
     const variants = await ORM.countAll(Variant, { database: db });
     expect(variants).toBe(7);
   });

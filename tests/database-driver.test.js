@@ -1,15 +1,18 @@
+import { beforeEach, afterEach, describe, it, expect } from 'bun:test';
+
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
-import DatabaseAdapter from '../classes/adapter/database/BetterSQLite3.mjs';
+import DatabaseAdapter from '../classes/adapter/database/BunSqlite.mjs';
 
 describe('database driver ', () => {
-  test('create db', async () => {
+
+  it('create db', async () => {
     const db = await DatabaseAdapter.create(`${__dirname}/db/empty.sqlite`);
-    expect(db.database.open).toBe(true);
+    expect(db.database !== null).toBe(true);
   });
 
-  test('create table', async () => {
+  it('create table', async () => {
     const db = await DatabaseAdapter.create(':memory:');
     await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
     await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
@@ -21,11 +24,11 @@ describe('database driver ', () => {
       await db.prepare('SELECT * FROM test;').get();
       expect('this should not be reached').toBe('');
     }catch(e){
-      expect(e.message).toBe('The database connection is not open');
+      expect(e.message).toBe('Cannot use a closed database');
     }
   });
 
-  test('transaction', async () => {
+  it('transaction', async () => {
     const db = await DatabaseAdapter.create(':memory:');
     await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
     await db.transactionStart();
@@ -34,7 +37,7 @@ describe('database driver ', () => {
     await db.transactionRollback();
 
     const result = await db.prepare('SELECT * FROM test WHERE id = 1;').get();
-    expect(result).toBe(undefined);
+    expect(result).toBe(null);
 
     await db.transactionStart();
     await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
@@ -45,7 +48,7 @@ describe('database driver ', () => {
     expect(result2.name).toBe('Foo');
   });
 
-  test('checkpoint', async () => {
+  it('checkpoint', async () => {
     const db = await DatabaseAdapter.create(':memory:');
     await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
     const result = await db.checkpoint();

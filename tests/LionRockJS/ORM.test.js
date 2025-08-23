@@ -1,8 +1,9 @@
+import { beforeEach, afterEach, describe, it, expect } from 'bun:test';
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
 import {Central, ORM, Model, CentralAdapterNode} from '@lionrockjs/central';
-import Database from 'better-sqlite3';
+import {Database} from 'bun:sqlite';
 import path from 'node:path';
 import fs from "node:fs";
 import ORMAdapterSQLite from "../../classes/adapter/orm/SQLite";
@@ -23,7 +24,7 @@ describe('orm test', () => {
   afterEach(async () => {
   });
 
-  test('orm', async() => {
+  it('orm', async() => {
     const obj = new Model();
     const className = obj.constructor.name;
 
@@ -32,7 +33,7 @@ describe('orm test', () => {
     // ORM is abstract class, should not found lowercase and tableName
   });
 
-  test('extends ORM', async () => {
+  it('extends ORM', async () => {
     const TestModel = (await import('./orm/application/classes/TestModel')).default;
     // eslint-disable-next-line no-new
     new TestModel();
@@ -40,7 +41,7 @@ describe('orm test', () => {
     expect(TestModel.tableName).toBe('testmodels');
   });
 
-  test('DB test', () => {
+  it('DB test', () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/db.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     const db = new Database(dbPath);
@@ -55,7 +56,7 @@ describe('orm test', () => {
     expect(result.text).toBe(tmpValue);
   });
 
-  test('ORM.setDB', async () => {
+  it('ORM.setDB', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/db1.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     const db = new Database(dbPath);
@@ -87,7 +88,7 @@ describe('orm test', () => {
     expect(m2.text).toBe('Foo');
   });
 
-  test('ORM instance setDB', async () => {
+  it('ORM instance setDB', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/db2.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     const db = new Database(dbPath);
@@ -117,7 +118,7 @@ describe('orm test', () => {
     expect(m2.text).toBe('Foo');
   });
 
-  test('alias model', async () => {
+  it('alias model', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/db3.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     const db = new Database(dbPath);
@@ -146,7 +147,7 @@ describe('orm test', () => {
     expect(model.text).toBe('Hello');
   });
 
-  test('belongsTo', async () => {
+  it('belongsTo', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsTo4.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(path.normalize(`${__dirname}/orm/db/belongsTo.default.sqlite`), dbPath);
@@ -195,7 +196,7 @@ describe('orm test', () => {
     }
   });
 
-  test('instance belongsTo', async () => {
+  it('instance belongsTo', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsTo5.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsTo.default.sqlite`, dbPath);
@@ -218,7 +219,7 @@ describe('orm test', () => {
     expect(owner.db).toStrictEqual(home.db);
   });
 
-  test('belongsToMany', async () => {
+  it('belongsToMany', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany6.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -244,7 +245,7 @@ describe('orm test', () => {
     expect(tags[1].name).toBe('tar');
   });
 
-  test('instance belongsToMany', async () => {
+  it('instance belongsToMany', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany7.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -271,7 +272,7 @@ describe('orm test', () => {
     expect(tags[1].db).toStrictEqual(product.db);
   });
 
-  test('ORM get all from model', async () => {
+  it('ORM get all from model', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany8.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -313,7 +314,7 @@ describe('orm test', () => {
     expect(tags8.name).toBe('tar');
   });
 
-  test('enumerate', async () => {
+  it('enumerate', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany10.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -328,7 +329,7 @@ describe('orm test', () => {
     expect(t.name).toBe('foo');
   });
 
-  test('write', async () => {
+  it('write', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsTo11.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsTo.default.sqlite`, dbPath);
@@ -346,7 +347,7 @@ describe('orm test', () => {
     expect(data.last_name).toBe('Panther');
   });
 
-  test('create new record', async () => {
+  it('create new record', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsTo12.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsTo.default.sqlite`, dbPath);
@@ -373,7 +374,7 @@ describe('orm test', () => {
     expect(data2.last_name).toBe('Chan');
   });
 
-  test('add belongsToMany', async () => {
+  it('add belongsToMany', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany13.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -405,7 +406,7 @@ describe('orm test', () => {
     expect(result2.length).toBe(2);
   });
 
-  test('add duplicate belongsToMany', async () => {
+  it('add duplicate belongsToMany', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany14.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -433,7 +434,7 @@ describe('orm test', () => {
     expect(result2.length).toBe(1);
   });
 
-  test('remove belongsToMany', async () => {
+  it('remove belongsToMany', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany15.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -461,7 +462,7 @@ describe('orm test', () => {
     expect(result2.length).toBe(0);
   });
 
-  test('delete', async () => {
+  it('delete', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany16.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -480,7 +481,7 @@ describe('orm test', () => {
     expect(result2.length).toBe(0);
   });
 
-  test('delete and remove links', async () => {
+  it('delete and remove links', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany17.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -525,7 +526,7 @@ describe('orm test', () => {
     expect(result4.length).toBe(0);
   });
 
-  test('lazy loading', async () => {
+  it('lazy loading', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany18.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -550,7 +551,7 @@ describe('orm test', () => {
     expect(product.name).toBe('bar');
   });
 
-  test('delete unsaved object', async () => {
+  it('delete unsaved object', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany19.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);
@@ -567,7 +568,7 @@ describe('orm test', () => {
     }
   });
 
-  test('handle hasMany target without tableName', async () => {
+  it('handle hasMany target without tableName', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsTo20.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsTo.default.sqlite`, dbPath);
@@ -602,7 +603,7 @@ describe('orm test', () => {
     }
   });
 
-  test('no database', async () => {
+  it('no database', async () => {
     Model.database = null;
 
     const Person = await ORM.import('Person');
@@ -616,7 +617,7 @@ describe('orm test', () => {
     }
   });
 
-  test('ORM read fail', async () => {
+  it('ORM read fail', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsTo22.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsTo.default.sqlite`, dbPath);
@@ -637,7 +638,7 @@ describe('orm test', () => {
     expect(a.created_at).toBe(null);
   });
 
-  test('ORM convert boolean to TRUE and FALSE when save', async () => {
+  it('ORM convert boolean to TRUE and FALSE when save', async () => {
     await Central.init({ EXE_PATH: `${__dirname}/test13` });
 
     // idx is autoincrement primary key
@@ -677,7 +678,7 @@ END;
     expect(!!r2.enable).toBe(true);
   });
 
-  test('ORM find', async () => {
+  it('ORM find', async () => {
     await Central.init({ EXE_PATH: `${__dirname}/test15` });
 
     // idx is autoincrement primary key
@@ -730,7 +731,7 @@ END;
     expect(r2.id).toBe(null);
   });
 
-  test('prepend model prefix path', async () => {
+  it('prepend model prefix path', async () => {
     await Central.init({ EXE_PATH: `${__dirname}/test15` });
     const Person = await ORM.import('Person');
     const p = new Person();
@@ -746,14 +747,14 @@ END;
     }
   });
 
-  test('ORM import', async () => {
+  it('ORM import', async () => {
     await Central.init({ EXE_PATH: `${__dirname}/test15` });
     const Person = await ORM.import('Person');
     const p = new Person();
     expect(!!p).toBe(true);
   });
 
-  test('ORM snapshot', async () => {
+  it('ORM snapshot', async () => {
     await Central.init({ EXE_PATH: `${__dirname}/test15` });
     const Person = await ORM.import('Person');
     const p = new Person();
@@ -768,7 +769,7 @@ END;
     expect(p.getStates()[1].name).toBe('Bob');
   });
 
-  test('ORM count all from model', async () => {
+  it('ORM count all from model', async () => {
     const dbPath = path.normalize(`${__dirname}/orm/db/belongsToMany20.sqlite`);
     if (fs.existsSync(dbPath))fs.unlinkSync(dbPath);
     fs.copyFileSync(`${__dirname}/orm/db/belongsToMany.default.sqlite`, dbPath);

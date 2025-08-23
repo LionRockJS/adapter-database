@@ -1,3 +1,5 @@
+import { beforeEach, afterEach, describe, it, expect } from 'bun:test';
+
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
@@ -26,7 +28,7 @@ import { Central, Model, ORM } from '@lionrockjs/central';
 import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
-import Database from 'better-sqlite3';
+import {Database} from 'bun:sqlite';
 
 Model.defaultAdapter = ORMAdapterSQLite;
 
@@ -78,7 +80,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     db.exec('DELETE FROM persons');
   });
 
-  test('read all', async () => {
+  it('read all', async () => {
     const result = await ORM.readAll(Person, { database: db, columns:['*'] });
 
     expect(result.length).toBe(6);
@@ -87,7 +89,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r2.length).toBe(3);
   });
 
-  test('read by', async () => {
+  it('read by', async () => {
     db.exec('DELETE FROM persons');
     const p = ORM.create(Person);
     p.name = 'Alice';
@@ -131,7 +133,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(falsy.length).toBe(2);
   });
 
-  test('read With', async () => {
+  it('read With', async () => {
     const criteria = [
       ['', 'enable', EQUAL, TRUE],
       [AND],
@@ -172,7 +174,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(res.length).toBe(0);
   });
 
-  test('delete all', async () => {
+  it('delete all', async () => {
     // prepare data
     await ORM.deleteAll(Person, { kv: new Map([['enable', true]]) });
 
@@ -184,7 +186,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(result2.length).toBe(0);
   });
 
-  test('delete by', async () => {
+  it('delete by', async () => {
     await ORM.deleteBy(Person, 'id', [1, 3, 5]);
     const r3 = db.prepare('SELECT * FROM persons').all();
     expect(r3.length).toBe(3);
@@ -198,7 +200,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r5.length).toBe(0);
   });
 
-  test('delete with', async () => {
+  it('delete with', async () => {
     const p = await ORM.factory(Person, 6);
     p.enable = true;
     await p.write();
@@ -213,7 +215,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r.length).toBe(2);
   });
 
-  test('delete without criteria', async () => {
+  it('delete without criteria', async () => {
     try {
       await ORM.deleteWith(Person, null);
     } catch (e) {
@@ -233,7 +235,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     }
   });
 
-  test('update all', async () => {
+  it('update all', async () => {
     await ORM.updateAll(Person, new Map([['enable', false]]), new Map([['email', 'goodbye@example.com']]));
     const r = db.prepare('SELECT * from persons WHERE enable = ?').all(0);
     expect(r[0].email).toBe('goodbye@example.com');
@@ -250,7 +252,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r2[5].email).toBe('remove@example.com');
   });
 
-  test('update by', async () => {
+  it('update by', async () => {
     await ORM.updateBy(Person, 'id', [1, 2, 5, 6], new Map([['email', 'goodbye@example.com'], ['name', 'anonymous']]));
     const r = db.prepare('SELECT * from persons').all();
     expect(r[0].name).toBe('anonymous');
@@ -261,7 +263,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r[5].name).toBe('anonymous');
   });
 
-  test('update with', async () => {
+  it('update with', async () => {
     const criteria = [
       ['', 'enable', EQUAL, FALSE],
       [OR, 'name', EQUAL, 'Alice'],
@@ -278,7 +280,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r[5].name).toBe('anonymous');
   });
 
-  test('insert all', async () => {
+  it('insert all', async () => {
     await ORM.insertAll(Person, ['id', 'enable', 'name', 'email'], [
       [7, true, 'George', 'george@example.com'],
       [8, true, 'Hong', 'hong@example.com'],
@@ -308,7 +310,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     }
   });
 
-  test('insert all with ids', async () => {
+  it('insert all with ids', async () => {
     await ORM.insertAll(Person, ['enable', 'name', 'email'], [
       [true, 'George', 'george@example.com'],
       [true, 'Hong', 'hong@example.com'],
@@ -326,7 +328,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r[10].id).toBe(555);
   });
 
-  test('insert all with partial ids', async () => {
+  it('insert all with partial ids', async () => {
     await ORM.insertAll(Person, ['enable', 'name', 'email'], [
       [true, 'George', 'george@example.com'],
       [true, 'Hong', 'hong@example.com'],
@@ -344,7 +346,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
     expect(r[10].id).not.toBe(555);
   });
 
-  test('insert all without ids', async () => {
+  it('insert all without ids', async () => {
     await ORM.insertAll(Person, ['enable', 'name', 'email'], [
       [true, 'George', 'george@example.com'],
       [true, 'Hong', 'hong@example.com'],
@@ -363,7 +365,7 @@ INSERT INTO persons (id, enable, name, email) VALUES (6, 0, 'Frank', 'frank@exam
   });
 
 
-  test('coverage', ()=>{
+  it('coverage', ()=>{
     expect(ORMAdapterSQLite.op(ORMAdapterSQLite.OP.AND)).toBe('AND');
     expect(ORMAdapterSQLite.op(null)).toBe(null);
     expect(ORMAdapterSQLite.op('Something')).toBe("'Something'");
