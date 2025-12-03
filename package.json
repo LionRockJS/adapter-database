@@ -1,25 +1,11 @@
 {
   "type": "module",
-  "name": "@lionrockjs/adapter-database-bun-sqlite",
-  "version": "0.0.3",
-  "description": "LionRockJS database adapter, using Bun and SQLite",
+  "name": "@lionrockjs/adapter-database-bun-postgresql",
+  "version": "0.0.1",
+  "description": "LionRockJS database adapter, using Bun and PostgreSQL",
   "main": "index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules ../../../node_modules/jest/bin/jest.js --coverage"
-  },
-  "jest": {
-    "verbose": true,
-    "transform": {},
-    "testMatch": [
-      "**/__tests__/**/*.[jt]s?(x)",
-      "**/?(*.)+(spec|test).[jt]s?(x)",
-      "**/?(*.)+(spec|test).mjs"
-    ],
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "mjs"
-    ]
+    "test": "bun test"
   },
   "repository": {
     "type": "git",
@@ -28,7 +14,7 @@
   "keywords": [
     "LionRock",
     "database",
-    "sqlite",
+    "postgresql",
     "bun"
   ],
   "author": "Kojin Nakana",
@@ -37,6 +23,7 @@
     "url": "https://github.com/LionRockJS/adapter-database/issues"
   },
   "homepage": "https://github.com/LionRockJS/adapter-database#readme",
-  "dependencies": {
+  "engines": {
+    "bun": ">=1.0.0"
   }
 }

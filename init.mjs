@@ -1,5 +1,5 @@
 import {ControllerMixinDatabase, Model} from "@lionrockjs/central";
-import {DatabaseAdapterBunSqlite, ORMAdapterSQLite} from "./index.js";
+import {DatabaseAdapterBunPostgres, ORMAdapterPostgreSQL} from "./index.js";
 
-Model.defaultAdapter = ORMAdapterSQLite;
-ControllerMixinDatabase.defaultAdapter = DatabaseAdapterBunSqlite;
+Model.defaultAdapter = ORMAdapterPostgreSQL;
+ControllerMixinDatabase.defaultAdapter = DatabaseAdapterBunPostgres;

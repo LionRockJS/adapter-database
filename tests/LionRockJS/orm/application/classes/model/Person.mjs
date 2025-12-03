@@ -5,6 +5,8 @@ export default class Person extends Model{
   last_name;
   phone;
   email;
+  enable;
+  name;
 
   static joinTablePrefix = 'person';
   static tableName = 'persons';
@@ -13,7 +15,9 @@ export default class Person extends Model{
     ['first_name', 'String'],
     ['last_name', 'String'],
     ['phone', 'String'],
-    ['email', 'String']
+    ['email', 'String'],
+    ['enable', 'Boolean'],
+    ['name', 'String']
   ]);
 
   static hasMany = [

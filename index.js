@@ -27,10 +27,10 @@ export default {
 }
 
 
-import DatabaseAdapterBunSqlite from './classes/adapter/database/BunSqlite.mjs';
-import ORMAdapterSQLite from './classes/adapter/orm/SQLite.mjs';
+import DatabaseAdapterBunPostgres from './classes/adapter/database/BunPostgres.mjs';
+import ORMAdapterPostgreSQL from './classes/adapter/orm/PostgreSQL.mjs';
 
 export {
-  DatabaseAdapterBunSqlite,
-  ORMAdapterSQLite
+  DatabaseAdapterBunPostgres,
+  ORMAdapterPostgreSQL
 }

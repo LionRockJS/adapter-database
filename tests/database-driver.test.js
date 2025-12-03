@@ -1,56 +1,66 @@
-import { beforeEach, afterEach, describe, it, expect } from 'bun:test';
+import { beforeAll, afterAll, beforeEach, afterEach, describe, it, expect } from 'bun:test';
 
-import url from "node:url";
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
+import DatabaseAdapter from '../classes/adapter/database/BunPostgres.mjs';
 
-import DatabaseAdapter from '../classes/adapter/database/BunSqlite.mjs';
+// Use environment variable or default test database
+const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/lionrock_test';
 
-describe('database driver ', () => {
+describe('PostgreSQL database driver', () => {
+  let db;
 
-  it('create db', async () => {
-    const db = await DatabaseAdapter.create(`${__dirname}/db/empty.sqlite`);
-    expect(db.database !== null).toBe(true);
+  beforeAll(async () => {
+    db = DatabaseAdapter.create(TEST_DATABASE_URL);
   });
 
-  it('create table', async () => {
-    const db = await DatabaseAdapter.create(':memory:');
-    await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
-    await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
-    const result = await db.prepare('SELECT * FROM test WHERE id = 1;').get();
-    expect(result.name).toBe('Foo');
-
-    await db.close();
-    try{
-      await db.prepare('SELECT * FROM test;').get();
-      expect('this should not be reached').toBe('');
-    }catch(e){
-      expect(e.message).toBe('Cannot use a closed database');
+  afterAll(async () => {
+    if (db) {
+      await db.exec('DROP TABLE IF EXISTS test_driver');
+      await db.close();
     }
   });
 
-  it('transaction', async () => {
-    const db = await DatabaseAdapter.create(':memory:');
-    await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
-    await db.transactionStart();
-    await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
-    await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(2, 'Bar');
-    await db.transactionRollback();
-
-    const result = await db.prepare('SELECT * FROM test WHERE id = 1;').get();
-    expect(result).toBe(null);
-
-    await db.transactionStart();
-    await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(1, 'Foo');
-    await db.prepare('INSERT INTO test (id, name) VALUES (?, ?);').run(2, 'Bar');
-    await db.transactionCommit();
-
-    const result2 = await db.prepare('SELECT * FROM test WHERE id = 1;').get();
-    expect(result2.name).toBe('Foo');
+  beforeEach(async () => {
+    await db.exec('DROP TABLE IF EXISTS test_driver');
   });
 
-  it('checkpoint', async () => {
-    const db = await DatabaseAdapter.create(':memory:');
-    await db.exec('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT);');
+  it('create db connection', async () => {
+    expect(db.database !== null).toBe(true);
+  });
+
+  it('create table and insert', async () => {
+    await db.exec('CREATE TABLE test_driver (id SERIAL PRIMARY KEY, name TEXT)');
+    await db.query('INSERT INTO test_driver (id, name) VALUES ($1, $2)', [1, 'Foo']);
+    
+    const results = await db.query('SELECT * FROM test_driver WHERE id = $1', [1]);
+    expect(results[0].name).toBe('Foo');
+  });
+
+  it('transaction rollback', async () => {
+    await db.exec('CREATE TABLE test_driver (id SERIAL PRIMARY KEY, name TEXT)');
+    
+    await db.transactionStart();
+    await db.query('INSERT INTO test_driver (id, name) VALUES ($1, $2)', [1, 'Foo']);
+    await db.query('INSERT INTO test_driver (id, name) VALUES ($1, $2)', [2, 'Bar']);
+    await db.transactionRollback();
+
+    const results = await db.query('SELECT * FROM test_driver WHERE id = $1', [1]);
+    expect(results.length).toBe(0);
+  });
+
+  it('transaction commit', async () => {
+    await db.exec('CREATE TABLE test_driver (id SERIAL PRIMARY KEY, name TEXT)');
+    
+    await db.transactionStart();
+    await db.query('INSERT INTO test_driver (id, name) VALUES ($1, $2)', [1, 'Foo']);
+    await db.query('INSERT INTO test_driver (id, name) VALUES ($1, $2)', [2, 'Bar']);
+    await db.transactionCommit();
+
+    const results = await db.query('SELECT * FROM test_driver WHERE id = $1', [1]);
+    expect(results[0].name).toBe('Foo');
+  });
+
+  it('checkpoint (no-op for PostgreSQL)', async () => {
+    await db.exec('CREATE TABLE test_driver (id SERIAL PRIMARY KEY, name TEXT)');
     const result = await db.checkpoint();
     expect(result).toBe(undefined);
   });
