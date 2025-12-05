@@ -33,6 +33,15 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   // Track placeholder index for PostgreSQL $1, $2, etc.
   static placeholderIndex = 0;
 
+  // Quote column names to handle reserved keywords like 'start', 'end'
+  static quoteColumn(col) {
+    return `"${col}"`;
+  }
+
+  static quoteColumns(columns) {
+    return columns.map(col => this.quoteColumn(col));
+  }
+
   static resetPlaceholder() {
     this.placeholderIndex = 0;
   }
@@ -60,7 +69,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
     if (!Array.isArray(criteria[0])) throw new Error('criteria must group by array.');
     this.resetPlaceholder();
     return criteria.map(
-      (x, i) => `${(i === 0) ? '' : this.op(x[0] || '')} ${x[1] || ''} ${this.op(x[2] || '')} ${this.op(x[3] || '', true)} `,
+      (x, i) => `${(i === 0) ? '' : this.op(x[0] || '')} ${x[1] ? this.quoteColumn(x[1]) : ''} ${this.op(x[2] || '')} ${this.op(x[3] || '', true)} `,
     ).join("");
   }
 
@@ -122,10 +131,10 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
         const parts = kv[0].split(':');
         const jsonPath = parts[1].replace('$.', '');
         // Use ->> for text extraction from JSON
-        return `${parts[0]}->>'${jsonPath}' ${kv[1] || 'ASC'}`;
+        return `${this.quoteColumn(parts[0])}->>'${jsonPath}' ${kv[1] || 'ASC'}`;
       }
       // PostgreSQL: use LOWER() for case-insensitive ordering instead of COLLATE NOCASE
-      return `LOWER(${kv[0]}::text) ${kv[1] || 'ASC'}`;
+      return `LOWER(${this.quoteColumn(kv[0])}::text) ${kv[1] || 'ASC'}`;
     });
 
     return {
@@ -173,13 +182,13 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   }
 
   async read(columns = ['id', 'name']) {
-    const sql = `SELECT ${columns.join(', ')} FROM ${this.tableName} WHERE id = $1`;
+    const sql = `SELECT ${this.constructor.quoteColumns(columns).join(', ')} FROM ${this.tableName} WHERE id = $1`;
     return this.constructor.getRow(this.database, sql, [this.client.id]);
   }
 
   async update(values) {
     const columns = this.client.getColumns();
-    const setClause = columns.map((x, i) => `${x} = $${i + 1}`).join(', ');
+    const setClause = columns.map((x, i) => `${this.constructor.quoteColumn(x)} = $${i + 1}`).join(', ');
     const sql = `UPDATE ${this.tableName} SET ${setClause} WHERE id = $${columns.length + 1}`;
     try {
       return this.constructor.run(this.database, sql, [...values, this.client.id]);
@@ -193,7 +202,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   async insert(values) {
     const columns = this.client.getColumns();
     const placeholders = this.constructor.generatePlaceholders(columns.length + 1);
-    const sql = `INSERT INTO ${this.tableName} (${columns.join(', ')}, id) VALUES (${placeholders})`;
+    const sql = `INSERT INTO ${this.tableName} (${this.constructor.quoteColumns(columns).join(', ')}, id) VALUES (${placeholders})`;
     try {
       return this.constructor.run(this.database, sql, [...values, this.client.id]);
     } catch (e) {
@@ -242,7 +251,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   }
 
   async readResult(limit, columns, where, values) {
-    const sqlSelect = `SELECT ${columns.join(', ')} FROM ${this.tableName} `;
+    const sqlSelect = `SELECT ${this.constructor.quoteColumns(columns).join(', ')} FROM ${this.tableName} `;
     const sql = sqlSelect + where;
 
     if (limit === 1) {
@@ -258,7 +267,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
 
     if (kv) {
       const keys = Array.from(kv.keys());
-      const whereClause = keys.map((k, i) => `${k} = $${i + 1}`).join(' AND ');
+      const whereClause = keys.map((k, i) => `${this.constructor.quoteColumn(k)} = $${i + 1}`).join(' AND ');
       const limitPlaceholder = `$${keys.length + 1}`;
       const offsetPlaceholder = `$${keys.length + 2}`;
       return this.readResult(
@@ -278,6 +287,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   }
 
   async readBy(key, values, columns = ['id', 'name'], limit = 1000, offset = 0, orderBy = new Map([['id', 'ASC']])) {
+    if (!values || values.length === 0) return [];
     const statementOrderBy = this.constructor.getOrderByStatement(orderBy);
     const placeholders = this.constructor.generatePlaceholders(values.length);
     const limitPlaceholder = `$${values.length + 1}`;
@@ -285,7 +295,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
     return this.readResult(
       limit,
       columns,
-      `WHERE ${key} IN (${placeholders})${statementOrderBy.statement} LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}`,
+      `WHERE ${this.constructor.quoteColumn(key)} IN (${placeholders})${statementOrderBy.statement} LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}`,
       [...values, ...statementOrderBy.values, limit, offset]
     );
   }
@@ -307,7 +317,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
     let sql, v;
     if (kv) {
       const keys = Array.from(kv.keys());
-      const whereClause = keys.map((k, i) => `${k} = $${i + 1}`).join(' AND ');
+      const whereClause = keys.map((k, i) => `${this.constructor.quoteColumn(k)} = $${i + 1}`).join(' AND ');
       sql = `SELECT COUNT(id) as count FROM ${this.tableName} WHERE ${whereClause}`;
       v = Array.from(kv.values());
     } else {
@@ -319,10 +329,11 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   }
 
   async countBy(key, values) {
+    if (!values || values.length === 0) return 0;
     const placeholders = this.constructor.generatePlaceholders(values.length);
     const result = await this.constructor.getRow(
       this.database,
-      `SELECT COUNT(id) as count FROM ${this.tableName} WHERE ${key} IN (${placeholders})`,
+      `SELECT COUNT(id) as count FROM ${this.tableName} WHERE ${this.constructor.quoteColumn(key)} IN (${placeholders})`,
       values
     );
     return Number(result?.count) || 0;
@@ -341,7 +352,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   async deleteAll(kv = null) {
     if (!kv) return this.constructor.run(this.database, `DELETE FROM ${this.tableName}`, []);
     const keys = Array.from(kv.keys());
-    const whereClause = keys.map((k, i) => `${k} = $${i + 1}`).join(' AND ');
+    const whereClause = keys.map((k, i) => `${this.constructor.quoteColumn(k)} = $${i + 1}`).join(' AND ');
     return this.constructor.run(
       this.database,
       `DELETE FROM ${this.tableName} WHERE ${whereClause}`,
@@ -350,10 +361,11 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   }
 
   async deleteBy(key, values) {
+    if (!values || values.length === 0) return;
     const placeholders = this.constructor.generatePlaceholders(values.length);
     return this.constructor.run(
       this.database,
-      `DELETE FROM ${this.tableName} WHERE ${key} IN (${placeholders})`,
+      `DELETE FROM ${this.tableName} WHERE ${this.constructor.quoteColumn(key)} IN (${placeholders})`,
       values
     );
   }
@@ -366,14 +378,14 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   async updateAll(kv, columnValues) {
     const keys = Array.from(columnValues.keys());
     const newValues = Array.from(columnValues.values());
-    const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(', ');
+    const setClause = keys.map((key, i) => `${this.constructor.quoteColumn(key)} = $${i + 1}`).join(', ');
 
     if (!kv) {
       return this.constructor.run(this.database, `UPDATE ${this.tableName} SET ${setClause}`, newValues);
     }
 
     const kvKeys = Array.from(kv.keys());
-    const whereClause = kvKeys.map((k, i) => `${k} = $${keys.length + i + 1}`).join(' AND ');
+    const whereClause = kvKeys.map((k, i) => `${this.constructor.quoteColumn(k)} = $${keys.length + i + 1}`).join(' AND ');
     return this.constructor.run(
       this.database,
       `UPDATE ${this.tableName} SET ${setClause} WHERE ${whereClause}`,
@@ -382,20 +394,21 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
   }
 
   async updateBy(key, values, columnValues) {
+    if (!values || values.length === 0) return;
     const colKeys = Array.from(columnValues.keys());
     const newValues = Array.from(columnValues.values());
-    const setClause = colKeys.map((k, i) => `${k} = $${i + 1}`).join(', ');
+    const setClause = colKeys.map((k, i) => `${this.constructor.quoteColumn(k)} = $${i + 1}`).join(', ');
     const placeholders = this.constructor.generatePlaceholders(values.length, colKeys.length + 1);
     return this.constructor.run(
       this.database,
-      `UPDATE ${this.tableName} SET ${setClause} WHERE ${key} IN (${placeholders})`,
+      `UPDATE ${this.tableName} SET ${setClause} WHERE ${this.constructor.quoteColumn(key)} IN (${placeholders})`,
       [...newValues, ...values]
     );
   }
 
   async updateWith(criteria, columnValues) {
     const keys = Array.from(columnValues.keys());
-    const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(', ');
+    const setClause = keys.map((key, i) => `${this.constructor.quoteColumn(key)} = $${i + 1}`).join(', ');
     const { wheres, whereValues } = this.constructor.getWheresAndWhereValueFromCriteria(criteria);
 
     // Need to offset the where placeholders
@@ -428,7 +441,7 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
 
     return this.constructor.run(
       this.database,
-      `INSERT INTO ${this.tableName} (${columns.join(', ')}) VALUES ${strValues.join(', ')}`,
+      `INSERT INTO ${this.tableName} (${this.constructor.quoteColumns(columns).join(', ')}) VALUES ${strValues.join(', ')}`,
       valueGroups.flat()
     );
   }
