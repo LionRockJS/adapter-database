@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "@lionrockjs/adapter-database-bun-postgresql",
+  "name": "@lionrockjs/adapter-database-bun-postgres",
   "version": "0.0.1",
   "description": "LionRockJS database adapter, using Bun and PostgreSQL",
   "main": "index.js",
