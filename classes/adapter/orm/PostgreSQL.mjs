@@ -78,8 +78,10 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
       if (x === null) return null;
       // PostgreSQL has native boolean support
       if (typeof x === 'boolean') return x;
-      if (typeof x === 'object') return JSON.stringify(x);
-      if (typeof x === 'function') return JSON.stringify(x());
+      if (typeof x === 'object') return x;
+      if (typeof x === 'function') return x();
+      //if x start with "{"" and end with "}"
+      if (typeof x === 'string' && x.startsWith('{') && x.endsWith('}')) return JSON.parse(x);
       return x;
     });
   }
@@ -173,7 +175,8 @@ export default class ORMAdapterPostgreSQL extends ORMAdapter {
 
   static async run(database, sql, values) {
     try {
-      return await database.query(sql, this.translateValues(values));
+      const translated = this.translateValues(values);
+      return await database.query(sql, translated);
     } catch (e) {
       Central.log(e);
       Central.log(sql);
