@@ -1,7 +1,7 @@
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
-import DatabaseAdapter from '../classes/adapter/database/BunSqlite.mjs';
+import DatabaseAdapter from '../src/adapter/database/BunSqlite';
 import { Database } from "bun:sqlite";
 const db = new Database('/Users/colin/Documents/code/frameworks/lionrockjs/adapter/database/bun/tests/db/empty.sqlite', {readwrite: true, create: false} )
 

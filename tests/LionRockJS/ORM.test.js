@@ -6,7 +6,7 @@ import {Central, ORM, Model, CentralAdapterNode} from '@lionrockjs/central';
 import {Database} from 'bun:sqlite';
 import path from 'node:path';
 import fs from "node:fs";
-import ORMAdapterSQLite from "../../classes/adapter/orm/SQLite";
+import ORMAdapterSQLite from "../../src/adapter/orm/SQLite";
 
 const EQUAL = "EQUAL";
 Model.defaultAdapter = ORMAdapterSQLite;
@@ -613,7 +613,7 @@ describe('orm test', () => {
       await peter.write();
       expect('this line should not be run').toBe('');
     } catch (e) {
-      expect(e.message).toBe("Cannot read properties of null (reading 'prepare')");
+      expect(e.message).toBe("null is not an object (evaluating 'database.prepare')");
     }
   });
 

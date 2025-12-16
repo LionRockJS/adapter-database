@@ -25,7 +25,7 @@ const {
 };
 
 import { Central, Model, ORM } from '@lionrockjs/central';
-import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
+import ORMAdapterSQLite from '../../src/adapter/orm/SQLite';
 import path from 'node:path';
 import fs from 'node:fs';
 import {Database} from 'bun:sqlite';

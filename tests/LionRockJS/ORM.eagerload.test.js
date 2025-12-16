@@ -4,7 +4,7 @@ import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 import {Database} from 'bun:sqlite';
 import { Central, ORM, Model } from '@lionrockjs/central';
-import ORMAdapterSQLite from '../../classes/adapter/orm/SQLite.mjs';
+import ORMAdapterSQLite from '../../src/adapter/orm/SQLite';
 Model.defaultAdapter = ORMAdapterSQLite;
 
 class Product extends Model {

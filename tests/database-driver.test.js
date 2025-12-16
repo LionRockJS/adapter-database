@@ -3,7 +3,7 @@ import { beforeEach, afterEach, describe, it, expect } from 'bun:test';
 import url from "node:url";
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, '');
 
-import DatabaseAdapter from '../classes/adapter/database/BunSqlite.mjs';
+import DatabaseAdapter from '../src/adapter/database/BunSqlite';
 
 describe('database driver ', () => {
 
