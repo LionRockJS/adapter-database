@@ -23,14 +23,8 @@ SOFTWARE.
 
 */
 export default {
-  filename: import.meta.url,
-}
-
-
+    filename: import.meta.url,
+};
 import DatabaseAdapterBunSqlite from './adapter/database/BunSqlite.mjs';
 import ORMAdapterSQLite from './adapter/orm/SQLite.mjs';
-
-export {
-  DatabaseAdapterBunSqlite,
-  ORMAdapterSQLite
-}
+export { DatabaseAdapterBunSqlite, ORMAdapterSQLite };
