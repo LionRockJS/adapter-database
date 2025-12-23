@@ -3,9 +3,12 @@
   "name": "@lionrockjs/adapter-database-bun-postgres",
   "version": "0.0.1",
   "description": "LionRockJS database adapter, using Bun and PostgreSQL",
-  "main": "index.js",
+  "main": "classes/index.js",
+  "types": "types/index.d.ts",
   "scripts": {
-    "test": "bun test"
+    "test": "bun test",
+    "build": "tsc",
+    "watch": "tsc -w"
   },
   "repository": {
     "type": "git",
@@ -25,5 +28,10 @@
   "homepage": "https://github.com/LionRockJS/adapter-database#readme",
   "engines": {
     "bun": ">=1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.10.5",
+    "@types/bun": "^1.0.0"
   }
 }
