@@ -17,8 +17,8 @@ export default class ORMAdapterSQLite extends ORMAdapter {
     static getRows(database: Database, sql: string, values: any[]): Promise<unknown[]>;
     static run(database: Database, sql: string, values: any[]): Promise<import("bun:sqlite").Changes>;
     read(columns?: string[]): Promise<unknown>;
-    update(values: any[]): Promise<import("bun:sqlite").Changes | undefined>;
-    insert(values: any[]): Promise<import("bun:sqlite").Changes | undefined>;
+    update(values: any[]): Promise<import("bun:sqlite").Changes>;
+    insert(values: any[]): Promise<import("bun:sqlite").Changes>;
     delete(): Promise<import("bun:sqlite").Changes>;
     hasMany(tableName: string, key: string): Promise<unknown[]>;
     belongsToMany(modelTableName: string, jointTableName: string, lk: string, fk: string): Promise<unknown[]>;

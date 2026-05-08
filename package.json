@@ -3,13 +3,13 @@
   "name": "@lionrockjs/adapter-database-bun-sqlite",
   "version": "0.0.3",
   "description": "LionRockJS database adapter, using Bun and SQLite",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "test": "bun test"
   },
   "devDependencies": {
     "bun-types": "latest",
-    "typescript": "^5.0.0"
+    "typescript": "^6.0.3"
   },
   "repository": {
     "type": "git",
