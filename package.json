@@ -3,7 +3,7 @@
   "name": "@lionrockjs/adapter-database-better-sqlite3",
   "version": "0.0.10",
   "description": "LionRockJS database adapter",
-  "main": "index.js",
+  "main": "dist/index.js",
   "types": "types/index.d.ts",
   "scripts": {
     "build": "tsc",
