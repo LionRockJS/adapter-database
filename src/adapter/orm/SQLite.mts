@@ -117,7 +117,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
   static async getRow(database: Database, sql: string, values: any[]) {
     try{
       // @ts-ignore
-      return database.prepare(sql).get(...this.translateValues(values));
+      return database.prepare(sql).get(this.translateValues(values));
     }catch(e){
       Central.log(e);
       Central.log(sql);
@@ -129,7 +129,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
   static async getRows(database: Database, sql: string, values: any[]){
     try{
       // @ts-ignore
-      return database.prepare(sql).all(...this.translateValues(values));
+      return database.prepare(sql).all(this.translateValues(values));
     }catch(e){
       Central.log(e);
       Central.log(sql);
@@ -141,7 +141,7 @@ export default class ORMAdapterSQLite extends ORMAdapter {
   static async run(database: Database, sql: string, values: any[]){
     try {
       // @ts-ignore
-      return database.prepare(sql).run(...this.translateValues(values));
+      return database.prepare(sql).run(this.translateValues(values));
     }catch(e){
       Central.log(e);
       Central.log(sql);
