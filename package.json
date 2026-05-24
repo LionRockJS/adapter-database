@@ -1,7 +1,7 @@
 {
   "type": "module",
-  "name": "@lionrockjs/adapter-database-better-sqlite3",
-  "version": "0.0.10",
+  "name": "@lionrockjs/adapter-database-cloudflare-d1",
+  "version": "2.0.0",
   "description": "LionRockJS database adapter",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
