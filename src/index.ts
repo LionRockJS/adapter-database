@@ -1,6 +1,4 @@
-// @ts-ignore
-import DatabaseAdapterBetterSQLite3 from './adapter/database/BetterSQLite3.mjs';
-// @ts-ignore
+import DatabaseAdapterCloudflareD1 from './adapter/database/BetterSQLite3.mjs';
 import ORMAdapterSQLite from './adapter/orm/SQLite.mjs';
 
 export default {
@@ -8,6 +6,6 @@ export default {
 }
 
 export {
-  DatabaseAdapterBetterSQLite3,
+  DatabaseAdapterCloudflareD1,
   ORMAdapterSQLite
 }

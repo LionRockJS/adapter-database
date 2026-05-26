@@ -2,7 +2,7 @@
   "type": "module",
   "name": "@lionrockjs/adapter-database-cloudflare-d1",
   "version": "2.0.0",
-  "description": "LionRockJS database adapter",
+  "description": "LionRockJS Cloudflare D1 database adapter",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
   "scripts": {
@@ -17,7 +17,8 @@
     "LionRock",
     "database",
     "sqlite",
-    "better-sqlite3"
+    "cloudflare",
+    "d1"
   ],
   "author": "Kojin Nakana",
   "license": "MIT",
@@ -25,9 +26,7 @@
     "url": "https://github.com/LionRockJS/adapter-database/issues"
   },
   "homepage": "https://github.com/LionRockJS/adapter-database#readme",
-  "dependencies": {
-    "better-sqlite3": "^12.9.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^6.0.3",
     "@types/node": "^25.6.2"

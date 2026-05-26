@@ -1,8 +1,6 @@
-// @ts-ignore
-import DatabaseAdapterBetterSQLite3 from './adapter/database/BetterSQLite3.mjs';
-// @ts-ignore
+import DatabaseAdapterCloudflareD1 from './adapter/database/BetterSQLite3.mjs';
 import ORMAdapterSQLite from './adapter/orm/SQLite.mjs';
 export default {
     filename: import.meta.url,
 };
-export { DatabaseAdapterBetterSQLite3, ORMAdapterSQLite };
+export { DatabaseAdapterCloudflareD1, ORMAdapterSQLite };
